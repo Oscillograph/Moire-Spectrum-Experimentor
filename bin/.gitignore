@@ -1,0 +1,15 @@
+/outdated
+/Makefile.win
+*.bak
+*.gch
+*.o
+*.bookmarks
+*.debug
+*.dev
+*.exe
+*.layout
+/build/Proforientator_private.res
+/Proforientator_private.h
+/Proforientator_private.rc
+/main.s
+

@@ -1,0 +1,14 @@
+.git
+Savannah_private.h
+*.o
+*.exe
+*.dev
+*.layout
+*.bookmarks
+*.debug
+*.rc
+*.res
+*.win
+*.bak
+*.gch
+*.txt
