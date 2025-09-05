@@ -7,8 +7,8 @@
 *.dev
 *.exe
 *.layout
-CMakeLists.txt
-CMakeCache.txt
+/CMakeCache.txt
+/CMakeLists.txt
 /build
 /release
 /cmake
