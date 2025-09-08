@@ -681,7 +681,19 @@ namespace Savannah
                     {
                         int j_index = j * signal.cols;
                         
-                        data_temp = signal.amplitude_spectrum[j_index + i];
+                        switch (app->m_FourierSpectrumMode)
+                        {
+                            case FourierSpectrumMode::Amplitude:
+                                {
+                                    data_temp = signal.amplitude_spectrum[j_index + i];
+                                }
+                                break;
+                            case FourierSpectrumMode::Phase:
+                                {
+                                    data_temp = signal.phase_spectrum[j_index + i];
+                                }
+                                break;
+                        }
                         
 //                        if (data_temp > data_max)
 //                        {
@@ -692,14 +704,33 @@ namespace Savannah
                     }
                 }
                 
-                data_max = data_max / (signal_x_step * signal_y_step);
-                
-                // calculate pixel color from data
-                app->m_ColorSchemes[app->m_ColorSchemeSelectedName].GetColor(
-                            data_max / signal.amplitude_spectrum_max, 
-                            app->lowerFFTWLevel, 
-                            app->upperFFTWlevel, 
-                            &r, &g, &b);
+                switch (app->m_FourierSpectrumMode)
+                {
+                    case FourierSpectrumMode::Amplitude:
+                    {
+                        data_max = data_max / (signal_x_step * signal_y_step);
+                        
+                        // calculate pixel color from data
+                        app->m_ColorSchemes[app->m_ColorSchemeSelectedName].GetColor(
+                                                data_max / signal.amplitude_spectrum_max, 
+                                                app->lowerFFTWLevel, 
+                                                app->upperFFTWlevel, 
+                                                &r, &g, &b);
+                    }
+                    break;
+                    case FourierSpectrumMode::Phase:
+                    {
+                        data_max = (data_max + pi) / (signal_x_step * signal_y_step) - pi;
+                        
+                        // calculate pixel color from data
+                        app->m_ColorSchemes[app->m_ColorSchemeSelectedName].GetColor(
+                                                (data_max + pi) / (2 * pi), 
+                                                app->lowerFFTWLevel, 
+                                                app->upperFFTWlevel, 
+                                                &r, &g, &b);
+                    }
+                    break;
+                }
 
                 *((unsigned char*)pixels + (pixels_y_index + pixels_x) * 4)     = r;
                 *((unsigned char*)pixels + (pixels_y_index + pixels_x) * 4 + 1) = g;
@@ -1106,14 +1137,17 @@ namespace Savannah
     				break;
                 case MSAppTasks::CreateImage:
                     {
-                        printf("m_Image address: %X\n", m_Image);
-                        CONSOLE_LOG("CreateImage start");
-                        m_Image = CreateImage(this, m_Image, signal, {m_Image_width, m_Image_height});
-                        CONSOLE_LOG("Image created");
-                        printf("m_Image address: %X\n", m_Image);
-                        if (m_Image != nullptr)
+                        if (global_data.calculation_is_done)
                         {
-                            printf("m_Image->ready: %X\n", m_Image->ready);
+                            printf("m_Image address: %X\n", m_Image);
+                            CONSOLE_LOG("CreateImage start");
+                            m_Image = CreateImage(this, m_Image, signal, {m_Image_width, m_Image_height});
+                            CONSOLE_LOG("Image created");
+                            printf("m_Image address: %X\n", m_Image);
+                            if (m_Image != nullptr)
+                            {
+                                printf("m_Image->ready: %X\n", m_Image->ready);
+                            }
                         }
                     }
                     break;
@@ -1172,6 +1206,7 @@ namespace Savannah
 		
 		if (ImGui::Begin("Example: Fullscreen window", &p_open, flags))
 		{
+            bool pushed_style = false; // if push/pop style is to be controlled by if-s
             if (ImGui::BeginTabBar("TrackSignalModelTabBar", ImGuiTabBarFlags_None))
             {
                 if (ImGui::BeginTabItem("Демонстрация сигнала##tabitem"))
@@ -1332,8 +1367,8 @@ namespace Savannah
                                 CONSOLE_LOG("new task: CalculateFFT");
                                 NewTask(MSAppTasks::CalculateFFT);
                             } else {
-//					m_Image->UpdatePixels(&m_ColorSchemes[m_ColorSchemeSelectedName], m_FourierSpectrumMode);
-//					m_Image->UpdateTexture();
+                                CONSOLE_LOG("new task: Create Image");
+                                NewTask(MSAppTasks::CreateImage);
                             }
                         }
                         ImGui::PopStyleColor();
@@ -1349,14 +1384,14 @@ namespace Savannah
                                 CONSOLE_LOG("new task: CalculateFFT");
                                 NewTask(MSAppTasks::CalculateFFT);
                             } else {
-//					m_Image->UpdatePixels(&m_ColorSchemes[m_ColorSchemeSelectedName], m_FourierSpectrumMode);
-//					m_Image->UpdateTexture();
+                                CONSOLE_LOG("new task: Create Image");
+                                NewTask(MSAppTasks::CreateImage);
                             }
                         }
                         ImGui::PopStyleColor();
                         
                         ImGui::PushStyleColor(ImGuiCol_Button, {0.25, 0, 0.25, 1.0});
-                        if (ImGui::Button("Пересчитать", {150 * m_WindowScale.x, 30 * m_WindowScale.y}))
+                        if (ImGui::Button("Посчитать ТС", {150 * m_WindowScale.x, 30 * m_WindowScale.y}))
                         {
                             CONSOLE_LOG("new task: CalculateFFT");
                             NewTask(MSAppTasks::CalculateFFT);
@@ -1372,37 +1407,63 @@ namespace Savannah
                         ImGui::PopStyleColor();
                         
                         ImGui::SeparatorText("Режим симуляции");
+                        if (global_data.signal_dimensions_mode == SignalDimensionsMode::Time_Amplitude)
+                        {
+                            ImGui::PushStyleColor(ImGuiCol_Button, {0.25, 0.5, 0.25, 1.0});
+                            pushed_style = true;
+                        }
                         if (ImGui::Button("U(t) | P(fб)", {150 * m_WindowScale.x, 30 * m_WindowScale.y}))
                         {
                             global_data.signal_dimensions_mode = SignalDimensionsMode::Time_Amplitude;
                             signal.dimensions = 1;
-                            
-                            CONSOLE_LOG("new task: CalculateFFT");
-                            NewTask(MSAppTasks::CalculateFFT);
+                        }
+                        if (pushed_style)
+                        {
+                            ImGui::PopStyleColor();
+                            pushed_style = false;
                         }
                         
+                        if (global_data.signal_dimensions_mode == SignalDimensionsMode::BeatFrequency_CarrierFrequency)
+                        {
+                            ImGui::PushStyleColor(ImGuiCol_Button, {0.25, 0.5, 0.25, 1.0});
+                            pushed_style = true;
+                        }
                         if (ImGui::Button("S(f0, fб)", {150 * m_WindowScale.x, 30 * m_WindowScale.y}))
                         {
                             global_data.signal_dimensions_mode = SignalDimensionsMode::BeatFrequency_CarrierFrequency;
-                            global_data.signal_rows_variable_min = 0e6;
+                            global_data.signal_rows_variable_min = 0e9;
                             global_data.signal_rows_variable_max = 10e9;
                             global_data.signal_rows_variable_step = 1e7;
                             signal.dimensions = 2;
-                            
-                            CONSOLE_LOG("new task: CalculateFFT");
-                            NewTask(MSAppTasks::CalculateFFT);
+                        }
+                        if (pushed_style)
+                        {
+                            ImGui::PopStyleColor();
+                            pushed_style = false;
                         }
                         
                         ImGui::SameLine(170 * m_WindowScale.x);
+                        if (global_data.signal_dimensions_mode == SignalDimensionsMode::BeatFrequency_CarrierFrequency_B)
+                        {
+                            ImGui::PushStyleColor(ImGuiCol_Button, {0.25, 0.5, 0.25, 1.0});
+                            pushed_style = true;
+                        }
                         if (ImGui::Button("S(f0, fб), var(B)", {150 * m_WindowScale.x, 30 * m_WindowScale.y}))
                         {
                             global_data.signal_dimensions_mode = SignalDimensionsMode::BeatFrequency_CarrierFrequency_B;
                             signal.dimensions = 2;
-                            
-                            CONSOLE_LOG("new task: CalculateFFT");
-                            NewTask(MSAppTasks::CalculateFFT);
+                        }
+                        if (pushed_style)
+                        {
+                            ImGui::PopStyleColor();
+                            pushed_style = false;
                         }
                         
+                        if (global_data.signal_dimensions_mode == SignalDimensionsMode::BeatFrequency_Height)
+                        {
+                            ImGui::PushStyleColor(ImGuiCol_Button, {0.25, 0.5, 0.25, 1.0});
+                            pushed_style = true;
+                        }
                         if (ImGui::Button("S(h, fб)", {150 * m_WindowScale.x, 30 * m_WindowScale.y}))
                         {
                             global_data.signal_dimensions_mode = SignalDimensionsMode::BeatFrequency_Height;
@@ -1410,25 +1471,55 @@ namespace Savannah
                             global_data.signal_rows_variable_min = 0;
                             global_data.signal_rows_variable_max = 2000;
                             global_data.signal_rows_variable_step = 2e0;
-                            
-                            CONSOLE_LOG("new task: CalculateFFT");
-                            NewTask(MSAppTasks::CalculateFFT);
+                        }
+                        if (pushed_style)
+                        {
+                            ImGui::PopStyleColor();
+                            pushed_style = false;
                         }
                         
+                        if (global_data.signal_dimensions_mode == SignalDimensionsMode::BeatFrequency_Dy)
+                        {
+                            ImGui::PushStyleColor(ImGuiCol_Button, {0.25, 0.5, 0.25, 1.0});
+                            pushed_style = true;
+                        }
                         if (ImGui::Button("S(dy, fб)", {150 * m_WindowScale.x, 30 * m_WindowScale.y}))
                         {
                             global_data.signal_dimensions_mode = SignalDimensionsMode::BeatFrequency_Dy;
                             signal.dimensions = 2;
-                            if (!signal.fftw_calculated)
-                            {
-                                CONSOLE_LOG("new task: CalculateFFT");
-                                NewTask(MSAppTasks::CalculateFFT);
-                            } else {
-//					m_Image->UpdatePixels(&m_ColorSchemes[m_ColorSchemeSelectedName], m_FourierSpectrumMode);
-//					m_Image->UpdateTexture();
-                            }
+                        }
+                        if (pushed_style)
+                        {
+                            ImGui::PopStyleColor();
+                            pushed_style = false;
                         }
                         
+                        ImGui::SeparatorText("Варьируемая переменная");
+                        if (signal.dimensions > 1)
+                        {
+                            ImGui::Text("Нижний порог: ");
+                            ImGui::SameLine(150);
+                            ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x);
+                            if (ImGui::InputDouble("###global_data_signal_rows_variable_min", &global_data.signal_rows_variable_min, 0.01, 0.1, "%.2f"))
+                            {
+                            }
+                            ImGui::Text("Верхний порог: ");
+                            ImGui::SameLine(150);
+                            ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x);
+                            if (ImGui::InputDouble("###global_data_signal_rows_variable_max", &global_data.signal_rows_variable_max, 0.01, 0.1, "%.2f"))
+                            {
+                            }
+                            ImGui::Text("Приращение: ");
+                            ImGui::SameLine(150);
+                            ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x);
+                            if (ImGui::InputDouble("###global_data_signal_rows_variable_step", &global_data.signal_rows_variable_step, 0.01, 0.1, "%.2f"))
+                            {
+                            }
+                        } else {
+                            ImGui::Text("Доступно только для тепловых карт.");
+                        }
+                        
+                        ImGui::Spacing();
                         ImGui::SeparatorText("Статус");
                         ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x);
                         if (global_data.todo_count > 0)
