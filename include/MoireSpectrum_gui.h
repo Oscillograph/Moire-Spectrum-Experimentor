@@ -105,6 +105,8 @@ namespace Savannah
         bool spare_memory_on_frequencies = true;
         double beat_frequency_min = 0.0; // Hz
         double beat_frequency_max = 0.0; // Hz
+        
+        bool manual_samples_rate = false;
     };
     
     struct Object

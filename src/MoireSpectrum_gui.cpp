@@ -44,40 +44,46 @@ namespace Savannah
         signal->raw_calculated = false;
         if (signal->dimensions > 0) // making sure the signal is initialized at all
         {
-            // spare resouces
-            if (rules->spare_memory_on_frequencies)
+            // manual samples rate setup
+            if (rules->manual_samples_rate)
             {
-                rules->beat_frequency_min = 0.0;
-                
-                // this memory saving technique is based on the assumption that the object is basically a line perpendicular to the X axis
-                double distance_max = 0.0;
-                double distance = 0.0;
-                for (int i = 0; i < object->size; ++i)
-                {
-                    distance = sqrt(pow(radar->position.x - (object->position.x + object->structure[object->size - 1].position.x), 2) +
-                                    pow(radar->position.y - (object->position.y + object->structure[object->size - 1].position.y), 2) +
-                                    pow(radar->position.z - (object->position.z + object->structure[object->size - 1].position.z), 2));
-                    if (distance > distance_max)
-                    {
-                        distance_max = distance;
-                    }
-                }
-                double tk_max = 2.1*distance_max / universe->c;
-                rules->beat_frequency_max = radar->deviation_frequency * tk_max;
-                radar->sampling_frequency = 2 * rules->beat_frequency_max;
                 radar->time_sample_width = 1/radar->sampling_frequency;
-                CONSOLE_LOG("Sparing memory mode ON");
-                CONSOLE_LOG("tk_max: ", tk_max, " sec");
-                CONSOLE_LOG("beat frequency max: ", rules->beat_frequency_max, " Hz");
-                CONSOLE_LOG("sampling frequency: ", radar->sampling_frequency, " Hz");
             } else {
-                // still spare memory, but not that hard
-                rules->beat_frequency_max = radar->deviation_frequency * radar->observation_time;
-                radar->sampling_frequency = 2 * rules->beat_frequency_max;
-                radar->time_sample_width = 1/radar->sampling_frequency;
-                CONSOLE_LOG("Sparing memory mode OFF");
-                CONSOLE_LOG("beat frequency max: ", rules->beat_frequency_max, " Hz");
-                CONSOLE_LOG("sampling frequency: ", radar->sampling_frequency, " Hz");
+                // spare resouces
+                if (rules->spare_memory_on_frequencies)
+                {
+                    rules->beat_frequency_min = 0.0;
+                    
+                    // this memory saving technique is based on the assumption that the object is basically a line perpendicular to the X axis
+                    double distance_max = 0.0;
+                    double distance = 0.0;
+                    for (int i = 0; i < object->size; ++i)
+                    {
+                        distance = sqrt(pow(radar->position.x - (object->position.x + object->structure[object->size - 1].position.x), 2) +
+                                        pow(radar->position.y - (object->position.y + object->structure[object->size - 1].position.y), 2) +
+                                        pow(radar->position.z - (object->position.z + object->structure[object->size - 1].position.z), 2));
+                        if (distance > distance_max)
+                        {
+                            distance_max = distance;
+                        }
+                    }
+                    double tk_max = 2.1*distance_max / universe->c;
+                    rules->beat_frequency_max = radar->deviation_frequency * tk_max;
+                    radar->sampling_frequency = 2 * rules->beat_frequency_max;
+                    radar->time_sample_width = 1/radar->sampling_frequency;
+                    CONSOLE_LOG("Sparing memory mode ON");
+                    CONSOLE_LOG("tk_max: ", tk_max, " sec");
+                    CONSOLE_LOG("beat frequency max: ", rules->beat_frequency_max, " Hz");
+                    CONSOLE_LOG("sampling frequency: ", radar->sampling_frequency, " Hz");
+                } else {
+                    // still spare memory, but not that hard
+                    rules->beat_frequency_max = radar->deviation_frequency * radar->observation_time;
+                    radar->sampling_frequency = 2 * rules->beat_frequency_max;
+                    radar->time_sample_width = 1/radar->sampling_frequency;
+                    CONSOLE_LOG("Sparing memory mode OFF");
+                    CONSOLE_LOG("beat frequency max: ", rules->beat_frequency_max, " Hz");
+                    CONSOLE_LOG("sampling frequency: ", radar->sampling_frequency, " Hz");
+                }
             }
             
             // Important! cols might become so big that signal data exceed memory available
@@ -1711,6 +1717,7 @@ namespace Savannah
                         ImGui::TableNextColumn();
                         if (ImGui::Checkbox("###SpareMemory", &rules.spare_memory_on_frequencies))
                         {
+                            rules.manual_samples_rate = (rules.spare_memory_on_frequencies) ? false : rules.manual_samples_rate;
                         }
                         ImGui::TableNextColumn();
                         ImGui::Text("Экономить память");
@@ -1721,6 +1728,15 @@ namespace Savannah
                         }
                         ImGui::TableNextColumn();
                         ImGui::Text("Stop & Go");
+                        
+                        ImGui::TableNextColumn();
+                        if (ImGui::Checkbox("###ManualSamplesRate", &rules.manual_samples_rate))
+                        {
+                            rules.spare_memory_on_frequencies = (rules.manual_samples_rate) ? false : rules.spare_memory_on_frequencies;
+                        }
+                        ImGui::TableNextColumn();
+                        ImGui::Text("Ручная установка частоты дискретизации");
+                        
                         ImGui::EndTable();
                     }
                     
