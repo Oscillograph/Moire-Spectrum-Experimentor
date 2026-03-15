@@ -8,11 +8,8 @@
 *.exe
 *.layout
 /CMakeCache.txt
-/CMakeLists.txt
 /build
 /release
-/cmake
-/CMakeFiles
 /MoireSpectrum_private.h
 /MoireSpectrum_private.rc
 /main.s
