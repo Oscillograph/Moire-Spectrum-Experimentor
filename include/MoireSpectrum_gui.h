@@ -1,10 +1,10 @@
 #ifndef MOIREE_SPECTRUM_GUI_H
 #define MOIREE_SPECTRUM_GUI_H
 
-#include <include/savannah/savannah.h>
+#include <savannah/savannah.h>
 
 // #include <include/yaml_wrapper.h>
-#include <include/logger.h>
+// #include <include/logger.h>
 //#include <initializer_list>
 
 #include <external/fftw/fftw3.h> // to calculate FFT

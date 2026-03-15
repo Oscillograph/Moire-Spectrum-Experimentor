@@ -10,7 +10,7 @@ int main(int argc, char** argv)
 	application->Init();
 	
 	float time_previous = (float)glfwGetTime();
-	int idle_frames = 0;
+//	int idle_frames = 0;
 	
 	while ((!glfwWindowShouldClose(application->GetWindow())) && !application->doExit){
 		glfwWaitEventsTimeout(application->GetFPS());

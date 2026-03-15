@@ -64,6 +64,7 @@ namespace Savannah {
 	protected:
 		ImFontConfig* font_config = nullptr;
 		GLFWwindow* m_Window = nullptr;
+//		WindowStack m_WindowStack;
 		int m_WindowWidth = 1280;
 		int m_WindowHeight = 720;
 		int m_WindowCurrentWidth = 0;

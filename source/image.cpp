@@ -5,6 +5,7 @@
 #include <external/stb_image_write.h>
 #include <filesystem>
 
+#include <include/savannah/utils/logger.h> // for logging
 #include <include/savannah/platforms/opengl/opengl_texture.h> // for OpenGLTexture2D
 
 namespace Savannah
@@ -43,7 +44,7 @@ namespace Savannah
             
             UpdateTexture();
 //            UpdateOriginalTexture();
-            CONSOLE_LOG("Texture created");
+            SAVANNAH_CONSOLE_LOG("Texture created");
         }
     }
     
@@ -54,7 +55,7 @@ namespace Savannah
         pixels = stbi_load(filepath.c_str(), &w, &h, &c, channelsDesired);
         if (!pixels)
         {
-            CONSOLE_LOG("stbi_load returned NULL. File format is probably not suppored.");
+            SAVANNAH_CONSOLE_LOG("stbi_load returned NULL. File format is probably not suppored.");
             return;
         } else {
             width = w;
@@ -63,8 +64,8 @@ namespace Savannah
         }
         
         aspectRatio = (float)height / width;
-        CONSOLE_LOG("Loaded Image constraints (w, h, c, a/r): ", width, ", ", height, ", ", channelsOriginal, ", ", aspectRatio);
-        CONSOLE_LOG("Desired channels: ", channelsDesired);
+        SAVANNAH_CONSOLE_LOG("Loaded Image constraints (w, h, c, a/r): ", width, ", ", height, ", ", channelsOriginal, ", ", aspectRatio);
+        SAVANNAH_CONSOLE_LOG("Desired channels: ", channelsDesired);
         
         // reinitialize values
         fftw_data_max = 0.0;
@@ -72,7 +73,7 @@ namespace Savannah
         magnitudeOrderPolishCoefficient = 1.0;
         
         // load fftw data from pixels
-        CONSOLE_LOG("Generating FFTW data");
+        SAVANNAH_CONSOLE_LOG("Generating FFTW data");
         delete[] fftw_data;
         fftw_data = new fftw_complex[width * height];
         unsigned char* pixel = pixels;
@@ -120,13 +121,13 @@ namespace Savannah
                 }
             }
         }
-        CONSOLE_LOG("FFTW data generation done");
+        SAVANNAH_CONSOLE_LOG("FFTW data generation done");
         
         // load texture to display
         UpdateTexture();
         UpdateOriginalTexture();
         ready = true;
-        CONSOLE_LOG("Texture updated");
+        SAVANNAH_CONSOLE_LOG("Texture updated");
     }
     
     void Image::UpdatePixels(MSAppColorScheme* colorScheme, FourierSpectrumMode mode)
@@ -137,15 +138,15 @@ namespace Savannah
         }
         if (!colorScheme)
         {
-            CONSOLE_RED("Image::UpdatePixels: color scheme is nullptr");
+            SAVANNAH_CONSOLE_RED("Image::UpdatePixels: color scheme is nullptr");
             return;
         } else {
-            CONSOLE_LOG("Chosen scheme: ", colorScheme->name);
+            SAVANNAH_CONSOLE_LOG("Chosen scheme: ", colorScheme->name);
         }
         magnitudeOrderPolishCoefficient = brightnessCoefficient*sqrt((fftw_data_max / fftw_data_min));
         magnitudeOrderPolishCoefficient = (magnitudeOrderPolishCoefficient == INFINITY) ? 100.0 : magnitudeOrderPolishCoefficient;		
-        CONSOLE_LOG("FFTW Data. Max: ", fftw_data_max, "; Min: ", fftw_data_min);
-        CONSOLE_LOG("Magnitude Order: ", magnitudeOrderPolishCoefficient);
+        SAVANNAH_CONSOLE_LOG("FFTW Data. Max: ", fftw_data_max, "; Min: ", fftw_data_min);
+        SAVANNAH_CONSOLE_LOG("Magnitude Order: ", magnitudeOrderPolishCoefficient);
         
         unsigned char* pixel = pixels;
         for (int x = 0; x < width; ++x)
@@ -214,7 +215,7 @@ namespace Savannah
             return;
         }
         delete texture;
-        CONSOLE_LOG("Creating texture for Image object");
+        SAVANNAH_CONSOLE_LOG("Creating texture for Image object");
         texture = new OpenGLTexture2D(pixels, width, height, channelsOriginal);
     }
     
@@ -225,7 +226,7 @@ namespace Savannah
             return;
         }
         delete originalTexture;
-        CONSOLE_LOG("Creating \"original\" texture for Image object");
+        SAVANNAH_CONSOLE_LOG("Creating \"original\" texture for Image object");
         originalTexture = new OpenGLTexture2D(pixels, width, height, channelsOriginal);
     }
     
@@ -284,7 +285,7 @@ namespace Savannah
     
     void Image::Save(const std::string& path)
     {
-        CONSOLE_LOG("stbi call to write png");
+        SAVANNAH_CONSOLE_LOG("stbi call to write png");
         int stride_in_bytes = width * channelsOriginal;
         stbi_write_png(path.c_str(), width, height, channelsOriginal, pixels, stride_in_bytes);
     }
@@ -292,7 +293,7 @@ namespace Savannah
     void MSAppColorScheme::GetColor(double value, double min, double max, int* r, int* g, int* b)
     {
         int left, right;
-//		CONSOLE_LOG(colors.size());
+//		SAVANNAH_CONSOLE_LOG(colors.size());
         
         if (value <= min)
         {

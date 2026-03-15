@@ -1,9 +1,10 @@
 #ifndef MSAPP_IMAGE_H
 #define MSAPP_IMAGE_H
 
+#include <savannah/common.h>
 #include <include/fwd.h>
 #include <external/imgui/imgui.h> // for ImVec4
-#include <include/logger.h>
+// #include <include/logger.h>
 #include <external/fftw/fftw3.h> // to calculate FFT
 
 #include <unordered_map>

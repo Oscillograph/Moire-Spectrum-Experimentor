@@ -1,5 +1,4 @@
-#include <include/MoireSpectrum_gui.h>
-
+#include <MoireSpectrum_gui.h>
 //#include <src/savannah/platforms/opengl/opengl_texture.cpp>
 
 namespace Savannah 
@@ -40,7 +39,7 @@ namespace Savannah
                          SimulationRules* rules, 
                          Signal* signal)
     {
-        CONSOLE_LOG("CalculateSignal - start");
+        SAVANNAH_CONSOLE_LOG("CalculateSignal - start");
         signal->raw_calculated = false;
         if (signal->dimensions > 0) // making sure the signal is initialized at all
         {
@@ -57,7 +56,7 @@ namespace Savannah
                     // this memory saving technique is based on the assumption that the object is basically a line perpendicular to the X axis
                     double distance_max = 0.0;
                     double distance = 0.0;
-                    for (int i = 0; i < object->size; ++i)
+                    for (size_t i = 0; i < object->size; ++i)
                     {
                         distance = sqrt(pow(radar->position.x - (object->position.x + object->structure[object->size - 1].position.x), 2) +
                                         pow(radar->position.y - (object->position.y + object->structure[object->size - 1].position.y), 2) +
@@ -71,18 +70,18 @@ namespace Savannah
                     rules->beat_frequency_max = radar->deviation_frequency * tk_max;
                     radar->sampling_frequency = 2 * rules->beat_frequency_max;
                     radar->time_sample_width = 1/radar->sampling_frequency;
-                    CONSOLE_LOG("Sparing memory mode ON");
-                    CONSOLE_LOG("tk_max: ", tk_max, " sec");
-                    CONSOLE_LOG("beat frequency max: ", rules->beat_frequency_max, " Hz");
-                    CONSOLE_LOG("sampling frequency: ", radar->sampling_frequency, " Hz");
+                    SAVANNAH_CONSOLE_LOG("Sparing memory mode ON");
+                    SAVANNAH_CONSOLE_LOG("tk_max: ", tk_max, " sec");
+                    SAVANNAH_CONSOLE_LOG("beat frequency max: ", rules->beat_frequency_max, " Hz");
+                    SAVANNAH_CONSOLE_LOG("sampling frequency: ", radar->sampling_frequency, " Hz");
                 } else {
                     // still spare memory, but not that hard
                     rules->beat_frequency_max = radar->deviation_frequency * radar->observation_time;
                     radar->sampling_frequency = 2 * rules->beat_frequency_max;
                     radar->time_sample_width = 1/radar->sampling_frequency;
-                    CONSOLE_LOG("Sparing memory mode OFF");
-                    CONSOLE_LOG("beat frequency max: ", rules->beat_frequency_max, " Hz");
-                    CONSOLE_LOG("sampling frequency: ", radar->sampling_frequency, " Hz");
+                    SAVANNAH_CONSOLE_LOG("Sparing memory mode OFF");
+                    SAVANNAH_CONSOLE_LOG("beat frequency max: ", rules->beat_frequency_max, " Hz");
+                    SAVANNAH_CONSOLE_LOG("sampling frequency: ", radar->sampling_frequency, " Hz");
                 }
             }
             
@@ -108,14 +107,14 @@ namespace Savannah
                     (global_data.signal_rows_variable_step != 0.0))
                 {
                     signal->rows = (int)floor(round((global_data.signal_rows_variable_max - global_data.signal_rows_variable_min) / global_data.signal_rows_variable_step));
-                    CONSOLE_LOG("signal rows to be calculated: ", signal->rows);
+                    SAVANNAH_CONSOLE_LOG("signal rows to be calculated: ", signal->rows);
                 } else {
                     signal->rows = 1;
                 }
             }
             
-            CONSOLE_LOG("total samples: ", signal->cols, " x ", signal->rows);
-            CONSOLE_LOG("total memory usage: ", (int)(round(signal->cols * sizeof(fftw_complex) * signal->rows / 1024)), " KB");
+            SAVANNAH_CONSOLE_LOG("total samples: ", signal->cols, " x ", signal->rows);
+            SAVANNAH_CONSOLE_LOG("total memory usage: ", (int)(round(signal->cols * sizeof(fftw_complex) * signal->rows / 1024)), " KB");
             
             if (signal->raw_data != nullptr)
             {
@@ -132,7 +131,7 @@ namespace Savannah
             // the idea is to navigate on "raw_data" using "fftw_source_row += cols"
             // it based on the assumption that FFTW library stores a pointer to the source data, not its value
             // same thing goes with fftw_out_row
-//            CONSOLE_LOG("zero: ", global_data.zero, "; zero2: [", global_data.zero2[0], ", ", global_data.zero2[1], "]");
+//            SAVANNAH_CONSOLE_LOG("zero: ", global_data.zero, "; zero2: [", global_data.zero2[0], ", ", global_data.zero2[1], "]");
             if (!signal->fftw_planned)
             {
                 signal->fftw_out_data = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * signal->rows * signal->cols);
@@ -167,8 +166,8 @@ namespace Savannah
                 signal->fftw_out_data[m][1] = 0.0;
             }
             
-            CONSOLE_LOG("object consists of ", object->structure.size(), " elements");
-            for (int object_index = 0; object_index < object->structure.size(); ++object_index)
+            SAVANNAH_CONSOLE_LOG("object consists of ", object->structure.size(), " elements");
+            for (size_t object_index = 0; object_index < object->structure.size(); ++object_index)
             {
                 // less calculations
                 if (global_data.signal_dimensions_mode != SignalDimensionsMode::BeatFrequency_Height)
@@ -215,7 +214,7 @@ namespace Savannah
                 {
                     case SignalDimensionsMode::Time_Amplitude:
                         {
-//                            CONSOLE_LOG("Time_Amplitude domain calculation for obj=", object_index);
+//                            SAVANNAH_CONSOLE_LOG("Time_Amplitude domain calculation for obj=", object_index);
                             double beat_frequency = 0.0;
                     
                             for (int row_index = 0; row_index < signal->rows; ++row_index)
@@ -225,8 +224,8 @@ namespace Savannah
                                 {
                                     double tk = distance[j] / universe->c;
                                     beat_frequency = 0.5 * radar->deviation_frequency * tk;
-        //                        CONSOLE_LOG("tk = ", tk);
-        //                        CONSOLE_LOG("beta*tk*t = ", radar->deviation_frequency * tk * time_samples[j]);
+        //                        SAVANNAH_CONSOLE_LOG("tk = ", tk);
+        //                        SAVANNAH_CONSOLE_LOG("beta*tk*t = ", radar->deviation_frequency * tk * time_samples[j]);
                                     
                                     // real part
                                     double a1 = - 2.0 * beat_frequency * time_samples[j];
@@ -245,7 +244,7 @@ namespace Savannah
                         break;
                     case SignalDimensionsMode::BeatFrequency_CarrierFrequency:
                         {
-//                            CONSOLE_LOG("BeatFrequency_CarrierFrequency domain calculation");
+//                            SAVANNAH_CONSOLE_LOG("BeatFrequency_CarrierFrequency domain calculation");
                             double carrier_frequency = global_data.signal_rows_variable_min;
                             double beat_frequency = 0.0;
                             
@@ -277,7 +276,7 @@ namespace Savannah
                         break;
                     case SignalDimensionsMode::BeatFrequency_Height:
                         {
-//                            CONSOLE_LOG("BeatFrequency_CarrierFrequency domain calculation");
+//                            SAVANNAH_CONSOLE_LOG("BeatFrequency_CarrierFrequency domain calculation");
                             double height = global_data.signal_rows_variable_min;
                             double beat_frequency = 0.0;
                             
@@ -340,7 +339,7 @@ namespace Savannah
             delete[] time_samples;
             
             // update min & max values
-            CONSOLE_LOG("Update signal min & max values");
+            SAVANNAH_CONSOLE_LOG("Update signal min & max values");
             signal->fftw_data_min = 0.0;
             signal->fftw_data_max = 0.0;
             for (size_t i = 0; i < signal->rows; ++i)
@@ -360,7 +359,7 @@ namespace Savannah
                 }
             }
             
-            CONSOLE_LOG("Signal calculation complete");
+            SAVANNAH_CONSOLE_LOG("Signal calculation complete");
             signal->raw_calculated = true;
             return;
         }
@@ -370,30 +369,30 @@ namespace Savannah
     
     void CalculateSpectrum(Signal* signal, Radar* radar)
     {        
-        CONSOLE_LOG("CalculateSpectrum - start");
+        SAVANNAH_CONSOLE_LOG("CalculateSpectrum - start");
         signal->fftw_calculated = false;
         if ((nullptr != signal->amplitude_spectrum) && 
             (nullptr != signal->phase_spectrum) && 
             (nullptr != signal->frequencies_axis_values))
         {
             // clear traces of pevious calculations
-            CONSOLE_LOG("CalculateSpectrum: clear traces of pevious calculations");
+            SAVANNAH_CONSOLE_LOG("CalculateSpectrum: clear traces of pevious calculations");
             delete[] signal->amplitude_spectrum;
             signal->amplitude_spectrum = nullptr;
             delete[] signal->phase_spectrum;
             signal->phase_spectrum = nullptr;
             delete[] signal->frequencies_axis_values;
             signal->frequencies_axis_values = nullptr;
-            CONSOLE_LOG("Done");
+            SAVANNAH_CONSOLE_LOG("Done");
         }
         
         // allocate memory
-        CONSOLE_LOG("Allocating memory");
+        SAVANNAH_CONSOLE_LOG("Allocating memory");
         signal->amplitude_spectrum = new double[signal->rows * signal->cols];
         signal->phase_spectrum = new double[signal->rows * signal->cols];
         signal->frequencies_axis_values = new double[signal->cols];
   
-        CONSOLE_LOG("Initializing memory");
+        SAVANNAH_CONSOLE_LOG("Initializing memory");
         int total_elements = signal->rows * signal->cols;
         for (int j = 0; j < total_elements; ++j)
         {
@@ -414,8 +413,8 @@ namespace Savannah
         {
             signal->fftw_source_row = signal->raw_data + (row_index * signal->cols);
             signal->fftw_out_row = signal->fftw_out_data + (row_index * signal->cols);
-//            CONSOLE_CYAN("row ", row_index, ": fftw_source_row = ", signal->fftw_source_row);
-//            CONSOLE_GREEN("row ", row_index, ": fftw_out_row = ", signal->fftw_out_row);
+//            SAVANNAH_CONSOLE_CYAN("row ", row_index, ": fftw_source_row = ", signal->fftw_source_row);
+//            SAVANNAH_CONSOLE_GREEN("row ", row_index, ": fftw_out_row = ", signal->fftw_out_row);
             
 //            fftw_destroy_plan(signal->fftw_plan_data);
 //            signal->fftw_plan_data = fftw_plan_dft_1d(signal->cols, 
@@ -431,8 +430,8 @@ namespace Savannah
             // tell how much work is done
             global_data.percentage_done = 50 * (double)(row_index + 1) / signal->rows;
         }
-//        CONSOLE_LOG("CalculateSpectrum - almost-end");
-//        CONSOLE_LOG("Raw data cols", signal->cols);
+//        SAVANNAH_CONSOLE_LOG("CalculateSpectrum - almost-end");
+//        SAVANNAH_CONSOLE_LOG("Raw data cols", signal->cols);
         double frequency_axis_step = radar->sampling_frequency / signal->cols;
         signal->fftw_x_even = ((signal->cols % 2) == 0);
         signal->fftw_dc_x = (signal->fftw_x_even) ? (signal->cols / 2) : (signal->cols / 2 + 1);
@@ -490,10 +489,10 @@ namespace Savannah
             global_data.percentage_done = 50.0 + (50 * (double)(row_index + 1) / signal->rows);
         }
         
-        CONSOLE_LOG("Spectrum calculated");
-        CONSOLE_LOG("Frequencies: ", signal->frequencies_axis_values[0], "..", signal->frequencies_axis_values[signal->cols-1], "; Values: ", -1.0, "..", 1.0);
+        SAVANNAH_CONSOLE_LOG("Spectrum calculated");
+        SAVANNAH_CONSOLE_LOG("Frequencies: ", signal->frequencies_axis_values[0], "..", signal->frequencies_axis_values[signal->cols-1], "; Values: ", -1.0, "..", 1.0);
         
-        CONSOLE_LOG("Update signal min & max values");
+        SAVANNAH_CONSOLE_LOG("Update signal min & max values");
         signal->amplitude_spectrum_min = 0.0;
         signal->amplitude_spectrum_max = 0.0;
         for (int i = 0; i < signal->rows; ++i)
@@ -561,15 +560,15 @@ namespace Savannah
             global_data.calculation_is_going = false;
             global_data.thread_locked = false;
         } else {
-            CONSOLE_LOG("Cannot start calculation: another one is in progress");
+            SAVANNAH_CONSOLE_LOG("Cannot start calculation: another one is in progress");
         }
-        CONSOLE_LOG("CalculateThread finished");
+        SAVANNAH_CONSOLE_LOG("CalculateThread finished");
         return;
     }
     
     Image* CreateImage(MSApp* app, Image* image, Signal& signal, ImVec2 image_size_desired)
     {
-        CONSOLE_LOG("CreateImage function start");
+        SAVANNAH_CONSOLE_LOG("CreateImage function start");
         printf("CreateImage image address before: %X\n", image);
         if (image != nullptr)
         {
@@ -643,7 +642,7 @@ namespace Savannah
         double data_temp = 0.0; // temporary storage for amplitude spectrum
         double data_max = 0.0; // what to store in current pixel
         
-        CONSOLE_LOG("Imaging signal [", signal.cols, "; ", signal.rows,
+        SAVANNAH_CONSOLE_LOG("Imaging signal [", signal.cols, "; ", signal.rows,
                     "] with step {", signal_x_step, "; ", signal_y_step,
                     "} to (", pixels_x_max, "; ", pixels_y_max, ")");
         for (signal_x_f = 0.0; signal_x_f < (double)signal_x_max; signal_x_f += signal_x_step_f)
@@ -748,19 +747,19 @@ namespace Savannah
 
             ++pixels_x;
         }
-        CONSOLE_LOG("Pixels processed: ", pixels_x, "; ", pixels_y);
+        SAVANNAH_CONSOLE_LOG("Pixels processed: ", pixels_x, "; ", pixels_y);
         
         // create an image
-        CONSOLE_LOG("Image object creation...");
+        SAVANNAH_CONSOLE_LOG("Image object creation...");
         
         if (image != nullptr)
         {
             image->Create(pixels_x_max, pixels_y_max, (void*)pixels);
             image->ready = true;
-            CONSOLE_LOG("Image ready = true");
+            SAVANNAH_CONSOLE_LOG("Image ready = true");
             printf("CreateImage image address: %X\n", image);
         } else {
-            CONSOLE_LOG("Despite all efforts, m_Image == nullptr");
+            SAVANNAH_CONSOLE_LOG("Despite all efforts, m_Image == nullptr");
         }
         
         return image;
@@ -768,8 +767,8 @@ namespace Savannah
     
 	MSApp::MSApp()
 	{
-		CONSOLE_GREEN("Application initialized.");
-		CONSOLE_LOG("Max texture size is: ", GL_MAX_TEXTURE_SIZE);
+		SAVANNAH_CONSOLE_GREEN("Application initialized.");
+		SAVANNAH_CONSOLE_LOG("Max texture size is: ", GL_MAX_TEXTURE_SIZE);
 		
 		SetWindowTitle("Moire Spectrum Experimentor App");
 		
@@ -1026,14 +1025,14 @@ namespace Savannah
 			{
 				m_ColorSchemes[it->first].colors.push_back(m_ColorSchemesMap[it->first][i]);
 			}
-			CONSOLE_LOG(it->first, " size: ", m_ColorSchemes[it->first].colors.size());
+			SAVANNAH_CONSOLE_LOG(it->first, " size: ", m_ColorSchemes[it->first].colors.size());
 		}
 		
 		m_CurrentMode = MSAppMode::Idle;
-		CONSOLE_LOG("Enter Idle mode");
+		SAVANNAH_CONSOLE_LOG("Enter Idle mode");
 		
 		NewTask(MSAppTasks::Idle);
-		CONSOLE_LOG("Add a new Task: Idle");
+		SAVANNAH_CONSOLE_LOG("Add a new Task: Idle");
 		
 		// setup File Dialog initial values
 		m_fileDialogInfo.type = ImGuiFileDialogType_OpenFile;
@@ -1077,7 +1076,7 @@ namespace Savannah
             object.structure[i].position.z = 0.0;
 //            object.structure[i].position.z = 0.0 + ((double)rand() / RAND_MAX - 0.5);
         }
-        CONSOLE_LOG("Object consists of ", object.size, " elements");
+        SAVANNAH_CONSOLE_LOG("Object consists of ", object.size, " elements");
         
         // setup universe
         // actually, default values go well
@@ -1107,7 +1106,7 @@ namespace Savannah
 //        delete[] signal.raw_data;
 //        signal.raw_data = nullptr;
 		
-		CONSOLE_GREEN("Application is shut down.");
+		SAVANNAH_CONSOLE_GREEN("Application is shut down.");
 	}
 	
 	void MSApp::SetupResources()
@@ -1138,7 +1137,7 @@ namespace Savannah
                         
                         std::thread calculation(CalculateThread, this, &radar, &object, &medium, &universe, &rules, &signal);
                         calculation.detach();
-                        CONSOLE_LOG("CalculateFFT task complete");
+                        SAVANNAH_CONSOLE_LOG("CalculateFFT task complete");
     				}
     				break;
                 case MSAppTasks::CreateImage:
@@ -1146,9 +1145,9 @@ namespace Savannah
                         if (global_data.calculation_is_done)
                         {
                             printf("m_Image address: %X\n", m_Image);
-                            CONSOLE_LOG("CreateImage start");
+                            SAVANNAH_CONSOLE_LOG("CreateImage start");
                             m_Image = CreateImage(this, m_Image, signal, {m_Image_width, m_Image_height});
-                            CONSOLE_LOG("Image created");
+                            SAVANNAH_CONSOLE_LOG("Image created");
                             printf("m_Image address: %X\n", m_Image);
                             if (m_Image != nullptr)
                             {
@@ -1159,7 +1158,7 @@ namespace Savannah
                     break;
     			case MSAppTasks::LoadImage:
     				{
-    					CONSOLE_LOG("Loading image from path: ", m_fileDialogInfo.resultPath.string());
+    					SAVANNAH_CONSOLE_LOG("Loading image from path: ", m_fileDialogInfo.resultPath.string());
     					m_Image->Unload();
     					m_Image->Load(m_fileDialogInfo.resultPath.string());
     					
@@ -1170,7 +1169,7 @@ namespace Savannah
     				break;
     			case MSAppTasks::SaveFFT:
     				{
-    					CONSOLE_LOG("Saving FFT image to path: ", m_fileDialogInfo.resultPath.string());
+    					SAVANNAH_CONSOLE_LOG("Saving FFT image to path: ", m_fileDialogInfo.resultPath.string());
     					m_Image->Save(m_fileDialogInfo.resultPath.string());
     				}
     				break;
@@ -1195,7 +1194,7 @@ namespace Savannah
 		
 		TEXT_BASE_WIDTH = ImGui::CalcTextSize("A").x * m_WindowScale.x;
 		TEXT_BASE_HEIGHT = ImGui::GetTextLineHeightWithSpacing() * m_WindowScale.y;
-//		CONSOLE_LOG("Window scale: (", m_WindowScale.x, ", ", m_WindowScale.y, ")");
+//		SAVANNAH_CONSOLE_LOG("Window scale: (", m_WindowScale.x, ", ", m_WindowScale.y, ")");
 		
 		// ====================================================================================
 		// The Application starts here
@@ -1370,10 +1369,10 @@ namespace Savannah
                             m_FourierSpectrumMode = FourierSpectrumMode::Amplitude;
                             if (!signal.fftw_calculated)
                             {
-                                CONSOLE_LOG("new task: CalculateFFT");
+                                SAVANNAH_CONSOLE_LOG("new task: CalculateFFT");
                                 NewTask(MSAppTasks::CalculateFFT);
                             } else {
-                                CONSOLE_LOG("new task: Create Image");
+                                SAVANNAH_CONSOLE_LOG("new task: Create Image");
                                 NewTask(MSAppTasks::CreateImage);
                             }
                         }
@@ -1387,10 +1386,10 @@ namespace Savannah
                             m_FourierSpectrumMode = FourierSpectrumMode::Phase;
                             if (!signal.fftw_calculated)
                             {
-                                CONSOLE_LOG("new task: CalculateFFT");
+                                SAVANNAH_CONSOLE_LOG("new task: CalculateFFT");
                                 NewTask(MSAppTasks::CalculateFFT);
                             } else {
-                                CONSOLE_LOG("new task: Create Image");
+                                SAVANNAH_CONSOLE_LOG("new task: Create Image");
                                 NewTask(MSAppTasks::CreateImage);
                             }
                         }
@@ -1399,7 +1398,7 @@ namespace Savannah
                         ImGui::PushStyleColor(ImGuiCol_Button, {0.25, 0, 0.25, 1.0});
                         if (ImGui::Button("Посчитать ТС", {150 * m_WindowScale.x, 30 * m_WindowScale.y}))
                         {
-                            CONSOLE_LOG("new task: CalculateFFT");
+                            SAVANNAH_CONSOLE_LOG("new task: CalculateFFT");
                             NewTask(MSAppTasks::CalculateFFT);
                         }
                         ImGui::PopStyleColor();
@@ -1592,18 +1591,18 @@ namespace Savannah
                                 rules.beat_frequency_max = radar.deviation_frequency * tk_max;
                                 radar.sampling_frequency = 2 * rules.beat_frequency_max;
                                 radar.time_sample_width = 1/radar.sampling_frequency;
-                                CONSOLE_LOG("Sparing memory mode ON");
-                                CONSOLE_LOG("tk_max: ", tk_max, " sec");
-                                CONSOLE_LOG("beat frequency max: ", rules.beat_frequency_max, " Hz");
-                                CONSOLE_LOG("sampling frequency: ", radar.sampling_frequency, " Hz");
+                                SAVANNAH_CONSOLE_LOG("Sparing memory mode ON");
+                                SAVANNAH_CONSOLE_LOG("tk_max: ", tk_max, " sec");
+                                SAVANNAH_CONSOLE_LOG("beat frequency max: ", rules.beat_frequency_max, " Hz");
+                                SAVANNAH_CONSOLE_LOG("sampling frequency: ", radar.sampling_frequency, " Hz");
                             } else {
                                 // still spare memory
                                 rules.beat_frequency_max = radar.deviation_frequency * radar.observation_time;
                                 radar.sampling_frequency = 2 * rules.beat_frequency_max;
                                 radar.time_sample_width = 1/radar.sampling_frequency;
-                                CONSOLE_LOG("Sparing memory mode OFF");
-                                CONSOLE_LOG("beat frequency max: ", rules.beat_frequency_max, " Hz");
-                                CONSOLE_LOG("sampling frequency: ", radar.sampling_frequency, " Hz");
+                                SAVANNAH_CONSOLE_LOG("Sparing memory mode OFF");
+                                SAVANNAH_CONSOLE_LOG("beat frequency max: ", rules.beat_frequency_max, " Hz");
+                                SAVANNAH_CONSOLE_LOG("sampling frequency: ", radar.sampling_frequency, " Hz");
                             }
                         }
                         
@@ -1651,7 +1650,7 @@ namespace Savannah
                                 object.structure[i].position.y = 0.0 + i * object.distance_between_elements;
                                 object.structure[i].position.z = 0.0;
                             }
-                            CONSOLE_LOG("Object consists of ", object.size, " elements");
+                            SAVANNAH_CONSOLE_LOG("Object consists of ", object.size, " elements");
                         }
                         ImGui::Text("Расстояние между элементами, м");
                         if (ImGui::InputDouble("###ObjectElementLinearSize", &object.distance_between_elements, 1.0, 10.0, "%.2f"))
@@ -1668,7 +1667,7 @@ namespace Savannah
                                     object.structure[i].position.y = 0.0 + i * object.distance_between_elements;
                                     object.structure[i].position.z = 0.0;
                                 }
-                                CONSOLE_LOG("Object consists of ", object.size, " elements");
+                                SAVANNAH_CONSOLE_LOG("Object consists of ", object.size, " elements");
                             }
                         }
                         ImGui::Text("Расположение объекта, м");
@@ -1766,7 +1765,7 @@ namespace Savannah
 				if (ImGui::MenuItem("Открыть изображение...")) 
 				{
 					
-					CONSOLE_LOG("Ask to open popup");
+					SAVANNAH_CONSOLE_LOG("Ask to open popup");
 					m_fileDialogInfo.type = ImGuiFileDialogType_OpenFile;
 					m_fileDialogInfo.title = "Открыть файл";
 					m_fileDialogInfo.fileName = "";
@@ -1783,7 +1782,7 @@ namespace Savannah
 				ImGui::Separator();
 				if (ImGui::MenuItem("Сохранить изображение..."))
 				{
-					CONSOLE_LOG("Ask to open popup");
+					SAVANNAH_CONSOLE_LOG("Ask to open popup");
 					m_fileDialogInfo.type = ImGuiFileDialogType_SaveFile;
 					m_fileDialogInfo.title = "Сохранить файл";
 					m_fileDialogInfo.fileName = "fft_image.png";
@@ -1795,13 +1794,13 @@ namespace Savannah
 					};
 					m_fileDialogInfo.fileExtensionSelected = -1;
 					m_fileDialogOpen = true;
-					CONSOLE_LOG("Add a new Task: Save FFT image");
+					SAVANNAH_CONSOLE_LOG("Add a new Task: Save FFT image");
 				}
 				ImGui::Separator();
 				if (ImGui::MenuItem("Выход")) 
 				{
 					NewTask(MSAppTasks::Exit);
-					CONSOLE_LOG("Add a new Task: Exit");
+					SAVANNAH_CONSOLE_LOG("Add a new Task: Exit");
 				}
 				ImGui::EndMenu();
 			}
@@ -1809,7 +1808,7 @@ namespace Savannah
 			if (ImGui::MenuItem("Фурье-образ"))
 			{
 				NewTask(MSAppTasks::CalculateFFT);
-				CONSOLE_LOG("Add a new Task: Calculate Fourier Transform");
+				SAVANNAH_CONSOLE_LOG("Add a new Task: Calculate Fourier Transform");
 			}
 			
 			ImGui::EndMainMenuBar();
@@ -1825,7 +1824,7 @@ namespace Savannah
 					{
 						// Result path in: m_fileDialogInfo.resultPath
 						NewTask(MSAppTasks::LoadImage);
-						CONSOLE_LOG("Add a new Task: Load an image");
+						SAVANNAH_CONSOLE_LOG("Add a new Task: Load an image");
 						m_fileDialogOpen = false;
 						ImGui::CloseCurrentPopup();
 					}
@@ -1837,7 +1836,7 @@ namespace Savannah
 					{
 						// Result path in: m_fileDialogInfo.resultPath
 						NewTask(MSAppTasks::SaveFFT);
-						CONSOLE_LOG("Add a new Task: Save an FFT image");
+						SAVANNAH_CONSOLE_LOG("Add a new Task: Save an FFT image");
 						m_fileDialogOpen = false;
 						ImGui::CloseCurrentPopup();
 					}

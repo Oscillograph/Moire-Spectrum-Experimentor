@@ -106,11 +106,11 @@ namespace Savannah
 	#define SAVANNAH_CONSOLE_DEBUG(...)				::Savannah::Logger::Text("App: ", __VA_ARGS__); ::Savannah::Logger::Flush(1, 1);
 
 	// Savannah core log macros
-	#define SAVANNAH_CORE_TRACE(...)				SAVANNAH_CONSOLE_GREY("Core Trace: ", __VA_ARGS__)
-	#define SAVANNAH_CORE_INFO(...)					SAVANNAH_CONSOLE_GREY("Core Info: ", __VA_ARGS__)
-	#define SAVANNAH_CORE_WARN(...)					SAVANNAH_CONSOLE_YELLOW("Core Warning: ", __VA_ARGS__)
-	#define SAVANNAH_CORE_ERROR(...)				SAVANNAH_CONSOLE_RED("Core Error: ", __VA_ARGS__)
-	#define SAVANNAH_CORE_CRITICAL(...)				SAVANNAH_CONSOLE_RED("Core Critical Error: ", __VA_ARGS__)
+	#define SAVANNAH_CORE_TRACE(...)		SAVANNAH_CONSOLE_GREY("Core Trace: ", __VA_ARGS__)
+	#define SAVANNAH_CORE_INFO(...)			SAVANNAH_CONSOLE_GREY("Core Info: ", __VA_ARGS__)
+	#define SAVANNAH_CORE_WARN(...)			SAVANNAH_CONSOLE_YELLOW("Core Warning: ", __VA_ARGS__)
+	#define SAVANNAH_CORE_ERROR(...)		SAVANNAH_CONSOLE_RED("Core Error: ", __VA_ARGS__)
+	#define SAVANNAH_CORE_CRITICAL(...)		SAVANNAH_CONSOLE_RED("Core Critical Error: ", __VA_ARGS__)
 	
 	// App log macros
 	#define SAVANNAH_TRACE(...)		SAVANNAH_CONSOLE_GREY("App Trace: ", __VA_ARGS__)

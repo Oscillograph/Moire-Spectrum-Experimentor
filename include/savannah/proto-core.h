@@ -9,7 +9,7 @@
 #ifdef SAVANNAH_PLATFORM_WINDOWS
 	#define SAVANNAH_API
 #else
-	#error Savannah currently only supports Windows.
+	#define SAVANNAH_API
 #endif
 
 // Assertions for debugging

@@ -26,6 +26,7 @@
 // - utils
 // #include <savannah/utils/profiler.h>
 // #include <savannah/utils/platform-utils.h> // modal windows
+#include <savannah/utils/logger.h> // logging to console window
 
 // entry point
 // #include <savannah/main-loop.h> // need to be included in Client main file
