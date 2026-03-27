@@ -22,6 +22,17 @@ function(savannah_add_target target type include_dirs sources install_dir link_d
 		endif()
 		list(APPEND target_sources ${append_target_sources})
 	endforeach()
+
+	separate_arguments(separate_includes UNIX_COMMAND "${sources}")
+	foreach(dir IN LISTS separate_includes)
+		message("adding source item: ${dir}")
+		if (IS_DIRECTORY ${dir})
+			file(GLOB_RECURSE append_target_includes "${dir}/*.cpp")
+		else()
+			file(GLOB_RECURSE append_target_includes "${dir}")
+		endif()
+		list(APPEND target_includes ${append_target_sources})
+	endforeach()
 		
 	if (${type} MATCHES "(EXE|STATIC|SHARED)")
 		if (${type} STREQUAL "EXE")
@@ -35,12 +46,9 @@ function(savannah_add_target target type include_dirs sources install_dir link_d
 		message(FATAL_ERROR "Target <type> should be equal to EXE, STATIC or SHARED.")
 	endif()
 	
-	target_include_directories(${target} PRIVATE ${PROJECT_BASE_SOURCE_DIR}/include)
-	target_include_directories(${target} PRIVATE ${include_dirs})
-#	target_compile_options(${target} PRIVATE ${compiler_flags})
+	target_include_directories(${target} PRIVATE ${target_uncludes})
 	separate_arguments(cxx_compiler_flags UNIX_COMMAND "${compiler_flags}")
 	target_compile_options(${target} PRIVATE ${cxx_compiler_flags})
-#	target_compile_options(${target} PRIVATE -Wall -Werror -Wfatal-errors -DSAVANNAH_LOGGER_CLASS)
 	savannah_add_common_dependencies(${target} $link_dir)
 	
 	install(TARGETS ${target} 

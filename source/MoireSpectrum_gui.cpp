@@ -1,4 +1,4 @@
-#include <MoireSpectrum_gui.h>
+#include <include/MoireSpectrum_gui.h>
 //#include <src/savannah/platforms/opengl/opengl_texture.cpp>
 
 namespace Savannah 

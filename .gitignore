@@ -8,6 +8,9 @@
 *.exe
 *.layout
 /CMakeCache.txt
+/.cache
+/out
+/compile_commands.json
 /build
 /release
 /MoireSpectrum_private.h

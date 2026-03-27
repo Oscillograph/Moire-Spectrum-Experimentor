@@ -78,7 +78,7 @@ namespace Savannah
         fftw_data = new fftw_complex[width * height];
         unsigned char* pixel = pixels;
         uint32_t p, r, g, b, a;
-        p = 256 * 256 * 256 * 256 - 1;
+        p = 4294967295; // 256^4 - 1
         r = 256 * 256 * 256;
         g = 256 * 256;
         b = 256;

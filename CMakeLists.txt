@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.28)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 option(SAVANNAH_IMGUI_DEV "Dear ImGui development library" ON)
 
@@ -66,7 +67,8 @@ include(${PROJECT_BASE_SOURCE_DIR}/cmake/build-script-linux.cmake)
 savannah_add_target(
 	${PROJECT_NAME}
 	EXE
-	${PROJECT_BASE_SOURCE_DIR}/include
+	"${PROJECT_BASE_SOURCE_DIR}/include
+	 ${PROJECT_BASE_SOURCE_DIR}"
 	"${PROJECT_BASE_SOURCE_DIR}/source 
 	 ${PROJECT_BASE_SOURCE_DIR}/external/imgui/imgui.cpp
 	 ${PROJECT_BASE_SOURCE_DIR}/external/implot/implot.cpp
