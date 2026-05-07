@@ -1,7 +1,7 @@
 #ifndef SAVANNAH_FILEIO_H
 #define SAVANNAH_FILEIO_H
 
-#include <savannah/core.h>
+#include <savannah/proto-core.h>
 
 namespace Savannah {
 	class SAVANNAH_API FileIO {

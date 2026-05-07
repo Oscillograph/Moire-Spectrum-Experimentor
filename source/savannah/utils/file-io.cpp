@@ -1,4 +1,5 @@
 #include <savannah/utils/file-io.h>
+#include <savannah/utils/debugger.h>
 
 namespace Savannah {
 	std::string FileIO::GetRawText(std::string filename){
