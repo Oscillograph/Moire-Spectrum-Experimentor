@@ -5,27 +5,34 @@
 
 namespace Savannah
 {
-	static GLenum ShaderTypeFromString(const std::string& type) {
-		if (type == "vertex"){
+	static GLenum ShaderTypeFromString(const std::string& type)
+	{
+		if (type == "vertex")
+		{
 			return GL_VERTEX_SHADER;
 		}
-		if ((type == "fragment") || (type == "pixel")){
+		if ((type == "fragment") || (type == "pixel"))
+		{
 			return GL_FRAGMENT_SHADER;
 		}
-		if (type == "geometry"){
+		if (type == "geometry")
+		{
 			return GL_GEOMETRY_SHADER;
 		}
-		if (type == "compute"){
+		if (type == "compute")
+		{
 			return GL_COMPUTE_SHADER;
 		}
 		SAVANNAH_CORE_ASSERT(false, "Unknown shader type: {0}", type);
 		return GL_NONE;
 	}
 
-	OpenGLShader::OpenGLShader(const std::string& name, const std::string& filepath){
+	OpenGLShader::OpenGLShader(const std::string& name, const std::string& filepath)
+	{
 		std::string source = FileIO::GetRawText(filepath);
 
-		if (source.size() > 1) {
+		if (source.size() > 1)
+		{
 			auto shaderSources = Preprocess(source);
 			Compile(shaderSources);
 			SetName(name);
@@ -46,80 +53,97 @@ namespace Savannah
 	*/
 	}
 
-	OpenGLShader::OpenGLShader(const std::string& name, const std::string& vertexSrc, const std::string& fragmentSrc){
+	OpenGLShader::OpenGLShader(const std::string& name, const std::string& vertexSrc, const std::string& fragmentSrc, const std::string& computeSrc)
+	{
 		std::unordered_map<GLenum, std::string> shaderSources;
 		shaderSources[GL_VERTEX_SHADER] = vertexSrc;
 		shaderSources[GL_FRAGMENT_SHADER] = fragmentSrc;
+		shaderSources[GL_COMPUTE_SHADER] = computeSrc;
+
 		Compile(shaderSources);
 		SetName(name);
 	}
 
-	OpenGLShader::~OpenGLShader(){
+	OpenGLShader::~OpenGLShader()
+	{
 		glDeleteProgram(GetRendererID());
 	}
 
-	void OpenGLShader::Bind() const {
+	void OpenGLShader::Bind() const
+	{
 		glUseProgram(GetRendererID());
 	}
 
-	void OpenGLShader::Unbind() const {
+	void OpenGLShader::Unbind() const
+	{
 		glUseProgram(0);
 	}
 
-	void OpenGLShader::UploadUniformInt(std::string name, const int& value) const {
+	void OpenGLShader::UploadUniformInt(std::string name, const int& value) const
+	{
 		GLint location = glGetUniformLocation(GetRendererID(), name.c_str());
 		glUniform1i(location, value);
 	}
 
-	void OpenGLShader::UploadUniformIntArray(std::string name, int* values, int count) const {
+	void OpenGLShader::UploadUniformIntArray(std::string name, int* values, int count) const
+	{
 		GLint location = glGetUniformLocation(GetRendererID(), name.c_str());
 		glUniform1iv(location, count, values);
 	}
 
-	void OpenGLShader::UploadUniformFloat(std::string name, const float& value) const {
+	void OpenGLShader::UploadUniformFloat(std::string name, const float& value) const
+	{
 		GLint location = glGetUniformLocation(GetRendererID(), name.c_str());
 		glUniform1f (location, value);
 	}
 
-	void OpenGLShader::UploadUniformFloatArray(std::string name, float* values, int count) const {
+	void OpenGLShader::UploadUniformFloatArray(std::string name, float* values, int count) const
+	{
 		GLint location = glGetUniformLocation(GetRendererID(), name.c_str());
 		glUniform1fv(location, count, values);
 	}
 
-	void OpenGLShader::UploadUniformVec2(std::string name, const glm::vec2& vector) const {
+	void OpenGLShader::UploadUniformVec2(std::string name, const glm::vec2& vector) const
+	{
 		GLint location = glGetUniformLocation(GetRendererID(), name.c_str());
 		glUniform2fv (location, 2, glm::value_ptr(vector));
 	}
 
-	void OpenGLShader::UploadUniformVec3(std::string name, const glm::vec3& vector) const {
+	void OpenGLShader::UploadUniformVec3(std::string name, const glm::vec3& vector) const
+	{
 		GLint location = glGetUniformLocation(GetRendererID(), name.c_str());
 		glUniform3fv (location, 3, glm::value_ptr(vector));
 	}
 
-	void OpenGLShader::UploadUniformVec4(std::string name, const glm::vec4& vector) const {
+	void OpenGLShader::UploadUniformVec4(std::string name, const glm::vec4& vector) const
+	{
 		GLint location = glGetUniformLocation(GetRendererID(), name.c_str());
 		glUniform4fv (location, 4, glm::value_ptr(vector));
 	}
 
-	void OpenGLShader::UploadUniformMat3(std::string name, const glm::mat3& matrix) const {
+	void OpenGLShader::UploadUniformMat3(std::string name, const glm::mat3& matrix) const
+	{
 		// glProgramUniformMatrix4fv
 		GLint location = glGetUniformLocation(GetRendererID(), name.c_str());
 		glUniformMatrix3fv(location, 1, GL_FALSE, glm::value_ptr(matrix));
 	}
 
-	void OpenGLShader::UploadUniformMat4(std::string name, const glm::mat4& matrix) const {
+	void OpenGLShader::UploadUniformMat4(std::string name, const glm::mat4& matrix) const
+	{
 		// glProgramUniformMatrix4fv
 		GLint location = glGetUniformLocation(GetRendererID(), name.c_str());
 		glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(matrix));
 	}
 
-	std::unordered_map<GLenum, std::string> OpenGLShader::Preprocess(std::string& source){
+	std::unordered_map<GLenum, std::string> OpenGLShader::Preprocess(std::string& source)
+	{
 		std::unordered_map<GLenum, std::string> shaderSources;
 
 		const char* typeToken = "#type";
 		size_t typeTokenLength = strlen(typeToken);
 		size_t pos = source.find(typeToken, 0);
-		while (pos != std::string::npos) {
+		while (pos != std::string::npos)
+		{
 			size_t eol = source.find_first_of("\r\n", pos);
 			SAVANNAH_CORE_ASSERT((eol != std::string::npos), "Syntax error");
 			size_t begin = pos + typeTokenLength + 1; // only one space allowed
@@ -136,7 +160,8 @@ namespace Savannah
 		return shaderSources;
 	}
 
-	void OpenGLShader::Compile(const std::unordered_map<GLenum, std::string>& shaderSources){
+	void OpenGLShader::Compile(const std::unordered_map<GLenum, std::string>& shaderSources)
+	{
 		SetRendererID(glCreateProgram());
 		GLuint program = GetRendererID();
 
@@ -145,7 +170,8 @@ namespace Savannah
 		//std::array<GLuint, 2> glShaderIDs;
 		//int glShaderIDsIndex = 0;
 
-		for (auto& key_value : shaderSources) {
+		for (auto& key_value : shaderSources)
+		{
 			GLenum type = key_value.first;
 			std::string GLSLsource = key_value.second;
 
@@ -161,7 +187,8 @@ namespace Savannah
 
 			GLint isCompiled = 0;
 			glGetShaderiv(shader, GL_COMPILE_STATUS, &isCompiled);
-			if(isCompiled == GL_FALSE) {
+			if(isCompiled == GL_FALSE)
+			{
 				GLint maxLength = 0;
 				glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &maxLength);
 
@@ -196,7 +223,8 @@ namespace Savannah
 		// Note the different functions here: glGetProgram* instead of glGetShader*.
 		GLint isLinked = 0;
 		glGetProgramiv(program, GL_LINK_STATUS, (int *)&isLinked);
-		if (isLinked == GL_FALSE) {
+		if (isLinked == GL_FALSE)
+		{
 			GLint maxLength = 0;
 			glGetProgramiv(program, GL_INFO_LOG_LENGTH, &maxLength);
 
@@ -207,7 +235,8 @@ namespace Savannah
 			// We don't need the program anymore.
 			glDeleteProgram(program);
 			// Don't leak shaders either.
-			for (auto shaderID : glShaderIDs){
+			for (auto shaderID : glShaderIDs)
+			{
 				glDeleteShader(shaderID);
 			}
 
@@ -220,7 +249,8 @@ namespace Savannah
 		}
 
 		// Always detach shaders after a successful link.
-		for (auto shaderID : glShaderIDs){
+		for (auto shaderID : glShaderIDs)
+		{
 			glDetachShader(program, shaderID);
 		}
 

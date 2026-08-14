@@ -13,7 +13,7 @@ namespace Savannah
 {
 	class OpenGLShader : public Shader {
 	public:
-		OpenGLShader(const std::string& name, const std::string& vertexSrc, const std::string& fragmentSrc);
+		OpenGLShader(const std::string& name, const std::string& vertexSrc, const std::string& fragmentSrc, const std::string& computeSrc);
 		OpenGLShader(const std::string& name, const std::string& filepath);
 		virtual ~OpenGLShader();
 

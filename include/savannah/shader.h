@@ -36,7 +36,7 @@ namespace Savannah
 		inline const std::string& GetName() const { return m_Name; }
 		inline void SetName(std::string name) { m_Name = name; }
 
-		static Shader* Create(const std::string& name, const std::string& vertexSrc, const std::string& fragmentSrc);
+		static Shader* Create(const std::string& name, const std::string& vertexSrc, const std::string& fragmentSrc, const std::string& computeSrc);
 		static Shader* Create(const std::string& name, const std::string& filepath); // for glsl-files with two shader programs in'em
 
 	protected:
